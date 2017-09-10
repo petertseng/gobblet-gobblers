@@ -195,6 +195,20 @@ module GobbletGobblers
     end
   end
 
+  def self.print_spares(spare)
+    {
+      {"P1 Big", Search::P1_SPARE_BIG, Search::P1_HAS_SPARE_BIG},
+      {"P1 Mid", Search::P1_SPARE_MID, Search::P1_HAS_SPARE_MID},
+      {"P1 Small", Search::P1_SPARE_SMALL, Search::P1_HAS_SPARE_SMALL},
+      {"P2 Big", Search::P2_SPARE_BIG, Search::P2_HAS_SPARE_BIG},
+      {"P2 Mid", Search::P2_SPARE_MID, Search::P2_HAS_SPARE_MID},
+      {"P2 Small", Search::P2_SPARE_SMALL, Search::P2_HAS_SPARE_SMALL},
+    }.each { |name, one, has|
+      n = (spare & has) / one
+      puts "#{name}: #{n}"
+    }
+  end
+
   def self.search(piece, square)
     case piece
     when P1_SMALL
@@ -208,9 +222,11 @@ module GobbletGobblers
     end
 
     board = piece << (square * BITS_PER_SQUARE)
+    spares = Search::STARTING_SPARES - spare
 
     print_board(board, RED_GREEN)
-    winner, winning_move = Search.new.winner(board: board, player_to_move: 2_i8, spares: Search::STARTING_SPARES - spare)
+    print_spares(spares)
+    winner, winning_move = Search.new.winner(board: board, player_to_move: 2_i8, spares: spares)
     puts winner
     puts Search.move_to_s(winning_move) if winning_move
   end
