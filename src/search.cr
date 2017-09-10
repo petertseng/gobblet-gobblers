@@ -98,6 +98,27 @@ module GobbletGobblers
       end
     end
 
+    def all_moves(board : Board = 0_u64, player_to_move : Player = 1_i8, spares : Spares = STARTING_SPARES)
+      candidates = self.class.legal_moves(board, player_to_move, spares)
+      opponent = 3_i8 - player_to_move
+
+      candidates.each { |new_board, new_spares, move|
+        winners = GobbletGobblers.winners(new_board)
+
+        if winners[player_to_move - 1]
+          puts "#{self.class.move_to_s(move)}: Win (immediate)."
+          next
+        end
+
+        winner, winning_move = winner(new_board, opponent, new_spares)
+        if winner == player_to_move
+          puts "#{self.class.move_to_s(move)}: Win"
+        else
+          puts "#{self.class.move_to_s(move)}: Lose; opponent plays #{winning_move ? self.class.move_to_s(winning_move) : "unknown!"}"
+        end
+      }
+    end
+
     def winner(board : Board = 0_u64, player_to_move : Player = 1_i8, spares : Spares = STARTING_SPARES)
       to_move_marker = player_to_move << BITS_PER_BOARD
       if (cached = @cache[board | to_move_marker]?)
@@ -152,6 +173,6 @@ module GobbletGobblers
   end
 
   def self.search
-    puts Search.new.winner
+    puts Search.new.all_moves
   end
 end
