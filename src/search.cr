@@ -25,6 +25,9 @@ module GobbletGobblers
     P2_HAS_SPARE_SMALL = P2_SPARE_SMALL * 3
     STARTING_SPARES    = P1_SPARE_BIG * 2 + P1_SPARE_MID * 2 + P1_SPARE_SMALL * 2 + P2_SPARE_BIG * 2 + P2_SPARE_MID * 2 + P2_SPARE_SMALL * 2
 
+    # This might be faster than doing it in 0..8 order.
+    TARGET_SQUARES = {4, 0, 2, 6, 8, 1, 3, 5, 7}
+
     def self.legal_moves(board : Board, player_to_move : Player, spares : Spares)
       heights = (0..SIZE).map { |n| GobbletGobblers.height(board, n) }
 
@@ -46,7 +49,7 @@ module GobbletGobblers
       candidates = [] of Tuple(Board, Spares, Move)
 
       spares_present.each { |(piece, spare, height)|
-        (0...SIZE).each { |square|
+        TARGET_SQUARES.each { |square|
           next if heights[square] >= height
 
           new_board = board | (piece << (square * BITS_PER_SQUARE))
@@ -71,7 +74,7 @@ module GobbletGobblers
         end
         board_without = board & ~(piece << (from_square * BITS_PER_SQUARE))
 
-        (0...SIZE).each { |to_square|
+        TARGET_SQUARES.each { |to_square|
           next if from_square == to_square
           next if heights[to_square] >= from_height
 
