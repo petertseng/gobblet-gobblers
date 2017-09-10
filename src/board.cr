@@ -23,12 +23,12 @@ module GobbletGobblers
   BITS_PER_BOARD  = BITS_PER_SQUARE * SIZE
 
   PIECE_NAMES = {
-    P1_BIG   => "l",
-    P2_BIG   => "l",
-    P1_MID   => "m",
-    P2_MID   => "m",
-    P1_SMALL => "s",
-    P2_SMALL => "s",
+    P1_BIG   => "L",
+    P2_BIG   => "L",
+    P1_MID   => "M",
+    P2_MID   => "M",
+    P1_SMALL => "S",
+    P2_SMALL => "S",
   }
   SQUARE_NAMES = {
     "a3",
