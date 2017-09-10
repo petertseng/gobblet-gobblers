@@ -42,10 +42,12 @@ module GobbletGobblers
     "c1",
   }
 
-  RED_GREEN = {31, 32}
-  GREEN_RED = {32, 31}
+  RED       = {31, 'M'}
+  GREEN     = {32, 'N'}
+  RED_GREEN = {RED, GREEN}
+  GREEN_RED = {GREEN, RED}
 
-  def self.print_board(board : Board, colours : Tuple(Int32, Int32) = {0, 0}) : Nil
+  def self.print_board(board : Board, colours : Tuple(Tuple(Int32, Char), Tuple(Int32, Char)) = { {0, 'X'}, {0, 'O'} }) : Nil
     ROWS.times { |y|
       row_bits = (board >> (y * BITS_PER_ROW)) & MASK_PER_ROW
       square_bits = (0...COLS).map { |x| (row_bits >> (x * BITS_PER_SQUARE)) & MASK_PER_SQUARE }
@@ -56,9 +58,9 @@ module GobbletGobblers
       }.each { |p1, p2|
         puts square_bits.map { |square|
           if square & p1 != 0
-            "\e[1;#{colours[0]}mX\e[0m"
+            "\e[1;#{colours[0][0]}m#{colours[0][1]}\e[0m"
           elsif square & p2 != 0
-            "\e[1;#{colours[1]}mO\e[0m"
+            "\e[1;#{colours[1][0]}m#{colours[1][1]}\e[0m"
           else
             "."
           end
