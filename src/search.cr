@@ -5,7 +5,7 @@ module GobbletGobblers
     alias Spares = UInt16
 
     alias Move = Tuple(Piece, Square?, Square)
-    alias Result = Tuple(Player, Move?)
+    alias Result = Player
 
     @cache = Hash(Board, Result?).new
 
@@ -28,7 +28,7 @@ module GobbletGobblers
     def winner(board : Board = 0_u64, player_to_move : Player = 1, spares : Spares = STARTING_SPARES)
       to_move_marker = player_to_move << BITS_PER_BOARD
       if (cached = @cache[board | to_move_marker]?)
-        return cached
+        return {cached, nil}
       end
 
       GobbletGobblers.print_board(board) if DEBUG
@@ -65,9 +65,8 @@ module GobbletGobblers
           raise "Opponent already won, should be impossible?" if winners[opponent - 1]
 
           if winners[player_to_move - 1]
-            result = {player_to_move, {piece, nil, square}}
-            cache(board, to_move_marker, result)
-            return result
+            cache(board, to_move_marker, player_to_move)
+            return {player_to_move, {piece, nil, square}}
           end
 
           candidates << {new_board, spares - spare, {piece, nil, square}}
@@ -100,9 +99,8 @@ module GobbletGobblers
           next if winners[opponent - 1]
 
           if winners[player_to_move - 1]
-            result = {player_to_move, {piece, from_square, to_square}}
-            cache(board, to_move_marker, result)
-            return result
+            cache(board, to_move_marker, player_to_move)
+            return {player_to_move, {piece, from_square, to_square}}
           end
 
           candidates << {new_board, spares, {piece, from_square, to_square}}
@@ -128,16 +126,14 @@ module GobbletGobblers
         sub_winner, _ = winner(new_board, opponent, spares)
 
         if sub_winner == player_to_move
-          result = {sub_winner, move}
-          cache(board, to_move_marker, result)
-          return result
+          cache(board, to_move_marker, player_to_move)
+          return {player_to_move, move}
         end
       }
 
       # I did not win, so my opponent does.
-      result = {opponent, nil}
-      cache(board, to_move_marker, result)
-      result
+      cache(board, to_move_marker, opponent)
+      {opponent, nil}
     end
 
     private def cache(board, to_move_marker, result)
