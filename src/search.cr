@@ -11,13 +11,14 @@ module GobbletGobblers
         new_board = (piece << (square * BITS_PER_SQUARE))
         next if seen.includes?(new_board)
 
-        print_board(new_board, RED_GREEN)
+        # Extra space to align with moves (a1 - c3)
+        puts " #{PIECE_NAMES[piece]} @ #{SQUARE_NAMES[square]}"
+
         seen.add(new_board)
         TRANSFORMS.each { |t|
           transformed = transform(new_board, t)
           seen.add(transformed)
         }
-        puts
       }
     }
   end
