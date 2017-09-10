@@ -25,13 +25,8 @@ module GobbletGobblers
     P2_HAS_SPARE_SMALL = P2_SPARE_SMALL * 3
     STARTING_SPARES    = P1_SPARE_BIG * 2 + P1_SPARE_MID * 2 + P1_SPARE_SMALL * 2 + P2_SPARE_BIG * 2 + P2_SPARE_MID * 2 + P2_SPARE_SMALL * 2
 
-    def winner(board : Board = 0_u64, player_to_move : Player = 1_i8, spares : Spares = STARTING_SPARES)
-      to_move_marker = player_to_move << BITS_PER_BOARD
-      if (cached = @cache[board | to_move_marker]?)
-        return {cached, nil}
-      end
-
-      GobbletGobblers.print_board(board) if DEBUG
+    def self.legal_moves(board : Board, player_to_move : Player, spares : Spares)
+      heights = (0..SIZE).map { |n| GobbletGobblers.height(board, n) }
 
       spares_present = [] of Tuple(Piece, Spare, Height)
 
@@ -48,12 +43,7 @@ module GobbletGobblers
         raise "Unknown player #{player_to_move}"
       end
 
-      opponent = 3_i8 - player_to_move
-      heights = (0..SIZE).map { |n| GobbletGobblers.height(board, n) }
-
       candidates = [] of Tuple(Board, Spares, Move)
-
-      # First, check for wins in one move.
 
       spares_present.each { |(piece, spare, height)|
         (0...SIZE).each { |square|
@@ -61,17 +51,11 @@ module GobbletGobblers
 
           new_board = board | (piece << (square * BITS_PER_SQUARE))
 
-          winners = GobbletGobblers.winners(new_board)
-          raise "Opponent already won, should be impossible?" if winners[opponent - 1]
-
-          if winners[player_to_move - 1]
-            cache(board, to_move_marker, player_to_move)
-            return {player_to_move, {piece, nil, square}}
-          end
-
           candidates << {new_board, spares - spare, {piece, nil, square}}
         }
       }
+
+      opponent = 3_i8 - player_to_move
 
       (0...SIZE).each { |from_square|
         next unless GobbletGobblers.owner(board, from_square) == player_to_move
@@ -98,13 +82,33 @@ module GobbletGobblers
           # My opponent won on this move, don't bother making it
           next if winners[opponent - 1]
 
-          if winners[player_to_move - 1]
-            cache(board, to_move_marker, player_to_move)
-            return {player_to_move, {piece, from_square, to_square}}
-          end
-
           candidates << {new_board, spares, {piece, from_square, to_square}}
         }
+      }
+
+      candidates
+    end
+
+    def winner(board : Board = 0_u64, player_to_move : Player = 1_i8, spares : Spares = STARTING_SPARES)
+      to_move_marker = player_to_move << BITS_PER_BOARD
+      if (cached = @cache[board | to_move_marker]?)
+        return {cached, nil}
+      end
+
+      GobbletGobblers.print_board(board) if DEBUG
+
+      opponent = 3_i8 - player_to_move
+
+      candidates = self.class.legal_moves(board, player_to_move, spares)
+
+      # First, check for wins in one move.
+      candidates.each { |new_board, spares, move|
+        winners = GobbletGobblers.winners(new_board)
+
+        if winners[player_to_move - 1]
+          cache(board, to_move_marker, player_to_move)
+          return {player_to_move, move}
+        end
       }
 
       opponent_to_move_marker = opponent << BITS_PER_BOARD
