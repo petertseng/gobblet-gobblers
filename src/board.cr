@@ -66,4 +66,50 @@ module GobbletGobblers
     (((board >> (7 * BITS_PER_SQUARE)) & MASK_PER_SQUARE) << (permutation[7] * BITS_PER_SQUARE)) |
     (((board >> (8 * BITS_PER_SQUARE)) & MASK_PER_SQUARE) << (permutation[8] * BITS_PER_SQUARE))
   end
+
+  def self.owner(board : Board, square : Int32)
+    bits = (board >> (square * BITS_PER_SQUARE)) & MASK_PER_SQUARE
+    if P1_BIG & bits != 0
+      1
+    elsif P2_BIG & bits != 0
+      2
+    elsif P1_MID & bits != 0
+      1
+    elsif P2_MID & bits != 0
+      2
+    elsif P1_SMALL & bits != 0
+      1
+    elsif P2_SMALL & bits != 0
+      2
+    else
+      0
+    end
+  end
+
+  LINES = {
+    {0, 1, 2},
+    {3, 4, 5},
+    {6, 7, 8},
+    {0, 3, 6},
+    {1, 4, 7},
+    {2, 5, 8},
+    {0, 4, 8},
+    {2, 4, 6},
+  }
+
+  def self.winners(board : Board)
+    owners = (0..SIZE).map { |n| owner(board, n) }
+    win1 = false
+    win2 = false
+    LINES.each { |a, b, c|
+      if owners[a] == owners[b] && owners[a] == owners[c] && owners[a] != 0
+        if owners[a] == 1
+          win1 = true
+        else
+          win2 = true
+        end
+      end
+    }
+    {win1, win2}
+  end
 end
