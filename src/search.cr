@@ -1,6 +1,6 @@
 module GobbletGobblers
   class Search
-    alias Player = Int32
+    alias Player = Int8
     alias Spare = UInt16
     alias Spares = UInt16
 
@@ -25,7 +25,7 @@ module GobbletGobblers
     P2_HAS_SPARE_SMALL = P2_SPARE_SMALL * 3
     STARTING_SPARES    = P1_SPARE_BIG * 2 + P1_SPARE_MID * 2 + P1_SPARE_SMALL * 2 + P2_SPARE_BIG * 2 + P2_SPARE_MID * 2 + P2_SPARE_SMALL * 2
 
-    def winner(board : Board = 0_u64, player_to_move : Player = 1, spares : Spares = STARTING_SPARES)
+    def winner(board : Board = 0_u64, player_to_move : Player = 1_i8, spares : Spares = STARTING_SPARES)
       to_move_marker = player_to_move << BITS_PER_BOARD
       if (cached = @cache[board | to_move_marker]?)
         return {cached, nil}
@@ -48,7 +48,7 @@ module GobbletGobblers
         raise "Unknown player #{player_to_move}"
       end
 
-      opponent = 3 - player_to_move
+      opponent = 3_i8 - player_to_move
       heights = (0..SIZE).map { |n| GobbletGobblers.height(board, n) }
 
       candidates = [] of Tuple(Board, Spares, Move)
