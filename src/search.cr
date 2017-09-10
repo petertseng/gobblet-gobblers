@@ -34,6 +34,7 @@ module GobbletGobblers
 
       opponent = 3 - player_to_move
       heights = (0..SIZE).map { |n| GobbletGobblers.height(board, n) }
+      best_opponent_delay = 0
 
       spares_present.each { |(piece, spare, height)|
         (0...SIZE).each { |square|
@@ -46,7 +47,7 @@ module GobbletGobblers
           # My opponent won on this move, don't bother making it
           next if winners[opponent - 1]
 
-          return player_to_move if winners[player_to_move - 1]
+          return {player_to_move, 1} if winners[player_to_move - 1]
 
           @seen.add(new_board)
           TRANSFORMS.each { |t|
@@ -54,13 +55,17 @@ module GobbletGobblers
             @seen.add(transformed)
           }
 
-          result = winner(new_board, opponent, spares - spare)
-          return player_to_move if result == player_to_move
+          sub_winner, sub_turns = winner(new_board, opponent, spares - spare)
+          if sub_winner == player_to_move
+            return {sub_winner, sub_turns + 1}
+          else
+            best_opponent_delay = {best_opponent_delay, sub_turns + 1}.max
+          end
         }
       }
 
       # I did not win, so my opponent does.
-      opponent
+      {opponent, best_opponent_delay}
     end
   end
 
