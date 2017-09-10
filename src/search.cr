@@ -1,25 +1,56 @@
 module GobbletGobblers
-  def self.search
-    seen = Set(Board).new
+  class Search
+    @seen = Set(Board).new
 
-    {
-      P1_BIG,
-      P1_MID,
-      P1_SMALL,
-    }.each { |piece|
-      (0...SIZE).each { |square|
-        new_board = (piece << (square * BITS_PER_SQUARE))
-        next if seen.includes?(new_board)
+    P1_SPARE_BIG = 1_u16 << 0
+    P1_SPARE_MID = 1_u16 << 2
+    P1_SPARE_SMALL = 1_u16 << 4
+    P2_SPARE_BIG = 1_u16 << 6
+    P2_SPARE_MID = 1_u16 << 8
+    P2_SPARE_SMALL = 1_u16 << 10
+    P1_HAS_SPARE_BIG = P1_SPARE_BIG * 3
+    P1_HAS_SPARE_MID = P1_SPARE_MID * 3
+    P1_HAS_SPARE_SMALL = P1_SPARE_SMALL * 3
+    P2_HAS_SPARE_BIG = P2_SPARE_BIG * 3
+    P2_HAS_SPARE_MID = P2_SPARE_MID * 3
+    P2_HAS_SPARE_SMALL = P2_SPARE_SMALL * 3
+    STARTING_SPARES = P1_SPARE_BIG * 2 + P1_SPARE_MID * 2 + P1_SPARE_SMALL * 2 + P2_SPARE_BIG * 2 + P2_SPARE_MID * 2 + P2_SPARE_SMALL * 2
 
-        # Extra space to align with moves (a1 - c3)
-        puts " #{PIECE_NAMES[piece]} @ #{SQUARE_NAMES[square]}"
+    def search(board : Board = 0_u64, player_to_move : Int32 = 1, spares : UInt16 = STARTING_SPARES)
+      spares_present = [] of Tuple(UInt64, Int32)
 
-        seen.add(new_board)
-        TRANSFORMS.each { |t|
-          transformed = transform(new_board, t)
-          seen.add(transformed)
+      case player_to_move
+      when 1
+        spares_present << {P1_BIG, 3} if spares & P1_HAS_SPARE_BIG != 0
+        spares_present << {P1_MID, 2} if spares & P1_HAS_SPARE_MID != 0
+        spares_present << {P1_SMALL, 1} if spares & P1_HAS_SPARE_SMALL != 0
+      when 2
+        spares_present << {P2_BIG, 3} if spares & P2_HAS_SPARE_BIG != 0
+        spares_present << {P2_MID, 2} if spares & P2_HAS_SPARE_MID != 0
+        spares_present << {P2_SMALL, 1} if spares & P2_HAS_SPARE_SMALL != 0
+      else
+        raise "Unknown player #{player_to_move}"
+      end
+
+      spares_present.each { |(piece, height)|
+        (0...SIZE).each { |square|
+          new_board = (piece << (square * BITS_PER_SQUARE))
+          next if @seen.includes?(new_board)
+
+          # Extra space to align with moves (a1 - c3)
+          puts " #{PIECE_NAMES[piece]} @ #{SQUARE_NAMES[square]}"
+
+          @seen.add(new_board)
+          TRANSFORMS.each { |t|
+            transformed = GobbletGobblers.transform(new_board, t)
+            @seen.add(transformed)
+          }
         }
       }
-    }
+    end
+  end
+
+  def self.search
+    Search.new.search
   end
 end
