@@ -9,7 +9,7 @@ module GobbletGobblers
 
     @cache = Hash(Board, Result?).new
 
-    DEBUG = false
+    DEBUG  = false
     SANITY = false
 
     P1_SPARE_BIG       = 1_u16 << 0
