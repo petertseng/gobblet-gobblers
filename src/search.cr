@@ -108,6 +108,8 @@ module GobbletGobblers
         }
       }
 
+      has_won = false
+      fastest_win = Int32::MAX
       best_opponent_delay = 0
       best_piece = 0_u64
       best_from_square = 0
@@ -130,10 +132,14 @@ module GobbletGobblers
         sub_winner, sub_turns, _, _, _ = winner(new_board, opponent, spares)
 
         if sub_winner == player_to_move
-          result = {sub_winner, sub_turns + 1, piece, from_square, to_square}
-          cache(board, to_move_marker, result)
-          return result
-        elsif sub_turns + 1 > best_opponent_delay
+          has_won = true
+          if sub_turns + 1 < fastest_win
+            fastest_win = sub_turns + 1
+            best_piece = piece
+            best_from_square = from_square
+            best_to_square = to_square
+          end
+        elsif !has_won && sub_turns + 1 > best_opponent_delay
           best_opponent_delay = sub_turns + 1
           best_piece = piece
           best_from_square = from_square
@@ -141,8 +147,12 @@ module GobbletGobblers
         end
       }
 
-      # I did not win, so my opponent does.
-      result = {opponent, best_opponent_delay, best_piece, best_from_square, best_to_square}
+      if has_won
+        result = {player_to_move, fastest_win, best_piece, best_from_square, best_to_square}
+      else
+        # I did not win, so my opponent does.
+        result = {opponent, best_opponent_delay, best_piece, best_from_square, best_to_square}
+      end
       cache(board, to_move_marker, result)
       result
     end
