@@ -86,6 +86,25 @@ module GobbletGobblers
     end
   end
 
+  def self.height(board : Board, square : Int32)
+    bits = (board >> (square * BITS_PER_SQUARE)) & MASK_PER_SQUARE
+    if P1_BIG & bits != 0
+      3
+    elsif P2_BIG & bits != 0
+      3
+    elsif P1_MID & bits != 0
+      2
+    elsif P2_MID & bits != 0
+      2
+    elsif P1_SMALL & bits != 0
+      1
+    elsif P2_SMALL & bits != 0
+      1
+    else
+      0
+    end
+  end
+
   LINES = {
     {0, 1, 2},
     {3, 4, 5},
