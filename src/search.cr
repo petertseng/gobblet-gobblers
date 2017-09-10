@@ -89,6 +89,15 @@ module GobbletGobblers
       candidates
     end
 
+    def self.move_to_s(move : Move)
+      piece, from_square, to_square = move
+      if from_square
+        "#{PIECE_NAMES[piece]} #{SQUARE_NAMES[from_square]} - #{SQUARE_NAMES[to_square]}"
+      else
+        "#{PIECE_NAMES[piece]}    @ #{SQUARE_NAMES[to_square]}"
+      end
+    end
+
     def winner(board : Board = 0_u64, player_to_move : Player = 1_i8, spares : Spares = STARTING_SPARES)
       to_move_marker = player_to_move << BITS_PER_BOARD
       if (cached = @cache[board | to_move_marker]?)
@@ -114,18 +123,11 @@ module GobbletGobblers
       opponent_to_move_marker = opponent << BITS_PER_BOARD
 
       candidates.each { |new_board, spares, move|
-        piece, from_square, to_square = move
         # Move is pending, so don't try it.
         next if @cache.has_key?(new_board | opponent_to_move_marker) && @cache[new_board | opponent_to_move_marker].nil?
         cache(new_board, opponent_to_move_marker, nil) unless @cache.has_key?(new_board | opponent_to_move_marker)
 
-        if DEBUG
-          if from_square
-            puts "Move: #{PIECE_NAMES[piece]} #{SQUARE_NAMES[from_square]} - #{SQUARE_NAMES[to_square]}"
-          else
-            puts "Move: #{PIECE_NAMES[piece]}    @ #{SQUARE_NAMES[to_square]}"
-          end
-        end
+        puts self.class.move_to_s(move) if DEBUG
 
         sub_winner, _ = winner(new_board, opponent, spares)
 
