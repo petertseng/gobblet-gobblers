@@ -6,26 +6,26 @@ module GobbletGobblers
   # This is unlikely to change because 16 requires more rules
   # (off-board pieces are in stacks, can only capture from off-board in a 3-in-a-row)
   # but we'll keep it here anyway
-  SIZE = 9
-  ROWS = 3
-  COLS = 3
+  SIZE            = 9
+  ROWS            = 3
+  COLS            = 3
   BITS_PER_SQUARE = 6
-  P1_BIG = 1_u64 << 0
-  P2_BIG = 1_u64 << 1
-  P1_MID = 1_u64 << 2
-  P2_MID = 1_u64 << 3
-  P1_SMALL = 1_u64 << 4
-  P2_SMALL = 1_u64 << 5
+  P1_BIG          = 1_u64 << 0
+  P2_BIG          = 1_u64 << 1
+  P1_MID          = 1_u64 << 2
+  P2_MID          = 1_u64 << 3
+  P1_SMALL        = 1_u64 << 4
+  P2_SMALL        = 1_u64 << 5
   MASK_PER_SQUARE = (1 << BITS_PER_SQUARE) - 1
-  BITS_PER_ROW = BITS_PER_SQUARE * COLS
-  MASK_PER_ROW = (1 << BITS_PER_ROW) - 1
-  BITS_PER_BOARD = BITS_PER_SQUARE * SIZE
+  BITS_PER_ROW    = BITS_PER_SQUARE * COLS
+  MASK_PER_ROW    = (1 << BITS_PER_ROW) - 1
+  BITS_PER_BOARD  = BITS_PER_SQUARE * SIZE
 
   PIECE_NAMES = {
-    P1_BIG => "l",
-    P2_BIG => "l",
-    P1_MID => "m",
-    P2_MID => "m",
+    P1_BIG   => "l",
+    P2_BIG   => "l",
+    P1_MID   => "m",
+    P2_MID   => "m",
     P1_SMALL => "s",
     P2_SMALL => "s",
   }
@@ -80,14 +80,14 @@ module GobbletGobblers
 
   def self.transform(board : Board, permutation : Tuple(Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32)) : Board
     (((board >> (0 * BITS_PER_SQUARE)) & MASK_PER_SQUARE) << (permutation[0] * BITS_PER_SQUARE)) |
-    (((board >> (1 * BITS_PER_SQUARE)) & MASK_PER_SQUARE) << (permutation[1] * BITS_PER_SQUARE)) |
-    (((board >> (2 * BITS_PER_SQUARE)) & MASK_PER_SQUARE) << (permutation[2] * BITS_PER_SQUARE)) |
-    (((board >> (3 * BITS_PER_SQUARE)) & MASK_PER_SQUARE) << (permutation[3] * BITS_PER_SQUARE)) |
-    (((board >> (4 * BITS_PER_SQUARE)) & MASK_PER_SQUARE) << (permutation[4] * BITS_PER_SQUARE)) |
-    (((board >> (5 * BITS_PER_SQUARE)) & MASK_PER_SQUARE) << (permutation[5] * BITS_PER_SQUARE)) |
-    (((board >> (6 * BITS_PER_SQUARE)) & MASK_PER_SQUARE) << (permutation[6] * BITS_PER_SQUARE)) |
-    (((board >> (7 * BITS_PER_SQUARE)) & MASK_PER_SQUARE) << (permutation[7] * BITS_PER_SQUARE)) |
-    (((board >> (8 * BITS_PER_SQUARE)) & MASK_PER_SQUARE) << (permutation[8] * BITS_PER_SQUARE))
+      (((board >> (1 * BITS_PER_SQUARE)) & MASK_PER_SQUARE) << (permutation[1] * BITS_PER_SQUARE)) |
+      (((board >> (2 * BITS_PER_SQUARE)) & MASK_PER_SQUARE) << (permutation[2] * BITS_PER_SQUARE)) |
+      (((board >> (3 * BITS_PER_SQUARE)) & MASK_PER_SQUARE) << (permutation[3] * BITS_PER_SQUARE)) |
+      (((board >> (4 * BITS_PER_SQUARE)) & MASK_PER_SQUARE) << (permutation[4] * BITS_PER_SQUARE)) |
+      (((board >> (5 * BITS_PER_SQUARE)) & MASK_PER_SQUARE) << (permutation[5] * BITS_PER_SQUARE)) |
+      (((board >> (6 * BITS_PER_SQUARE)) & MASK_PER_SQUARE) << (permutation[6] * BITS_PER_SQUARE)) |
+      (((board >> (7 * BITS_PER_SQUARE)) & MASK_PER_SQUARE) << (permutation[7] * BITS_PER_SQUARE)) |
+      (((board >> (8 * BITS_PER_SQUARE)) & MASK_PER_SQUARE) << (permutation[8] * BITS_PER_SQUARE))
   end
 
   def self.owner(board : Board, square : Int32)

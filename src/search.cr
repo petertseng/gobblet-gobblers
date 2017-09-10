@@ -6,19 +6,19 @@ module GobbletGobblers
     alias Spare = UInt16
     alias Spares = UInt16
 
-    P1_SPARE_BIG = 1_u16 << 0
-    P1_SPARE_MID = 1_u16 << 2
-    P1_SPARE_SMALL = 1_u16 << 4
-    P2_SPARE_BIG = 1_u16 << 6
-    P2_SPARE_MID = 1_u16 << 8
-    P2_SPARE_SMALL = 1_u16 << 10
-    P1_HAS_SPARE_BIG = P1_SPARE_BIG * 3
-    P1_HAS_SPARE_MID = P1_SPARE_MID * 3
+    P1_SPARE_BIG       = 1_u16 << 0
+    P1_SPARE_MID       = 1_u16 << 2
+    P1_SPARE_SMALL     = 1_u16 << 4
+    P2_SPARE_BIG       = 1_u16 << 6
+    P2_SPARE_MID       = 1_u16 << 8
+    P2_SPARE_SMALL     = 1_u16 << 10
+    P1_HAS_SPARE_BIG   = P1_SPARE_BIG * 3
+    P1_HAS_SPARE_MID   = P1_SPARE_MID * 3
     P1_HAS_SPARE_SMALL = P1_SPARE_SMALL * 3
-    P2_HAS_SPARE_BIG = P2_SPARE_BIG * 3
-    P2_HAS_SPARE_MID = P2_SPARE_MID * 3
+    P2_HAS_SPARE_BIG   = P2_SPARE_BIG * 3
+    P2_HAS_SPARE_MID   = P2_SPARE_MID * 3
     P2_HAS_SPARE_SMALL = P2_SPARE_SMALL * 3
-    STARTING_SPARES = P1_SPARE_BIG * 2 + P1_SPARE_MID * 2 + P1_SPARE_SMALL * 2 + P2_SPARE_BIG * 2 + P2_SPARE_MID * 2 + P2_SPARE_SMALL * 2
+    STARTING_SPARES    = P1_SPARE_BIG * 2 + P1_SPARE_MID * 2 + P1_SPARE_SMALL * 2 + P2_SPARE_BIG * 2 + P2_SPARE_MID * 2 + P2_SPARE_SMALL * 2
 
     def winner(board : Board = 0_u64, player_to_move : Player = 1, spares : Spares = STARTING_SPARES)
       spares_present = [] of Tuple(Piece, Spare, Height)
@@ -70,7 +70,7 @@ module GobbletGobblers
         when {2, 3}; piece = P2_BIG
         when {2, 2}; piece = P2_MID
         when {2, 1}; piece = P2_SMALL
-        else raise "Invalid piece #{player_to_move} #{from_height}"
+        else         raise "Invalid piece #{player_to_move} #{from_height}"
         end
         board_without = board & ~(piece << (from_square * BITS_PER_SQUARE))
 
