@@ -175,7 +175,23 @@ module GobbletGobblers
     end
   end
 
-  def self.search
-    puts Search.new.all_moves
+  def self.search(piece, square)
+    case piece
+    when P1_SMALL
+      spare = Search::P1_SPARE_SMALL
+    when P1_MID
+      spare = Search::P1_SPARE_MID
+    when P1_BIG
+      spare = Search::P1_SPARE_BIG
+    else
+      raise "Invalid piece #{piece}"
+    end
+
+    board = piece << (square * BITS_PER_SQUARE)
+
+    print_board(board, RED_GREEN)
+    winner, winning_move = Search.new.winner(board: board, player_to_move: 2_i8, spares: Search::STARTING_SPARES - spare)
+    puts winner
+    puts Search.move_to_s(winning_move) if winning_move
   end
 end
