@@ -10,6 +10,7 @@ module GobbletGobblers
     @cache = Hash(Board, Result?).new
 
     DEBUG = false
+    SANITY = false
 
     P1_SPARE_BIG       = 1_u16 << 0
     P1_SPARE_MID       = 1_u16 << 2
@@ -146,9 +147,14 @@ module GobbletGobblers
 
       opponent_to_move_marker = opponent << BITS_PER_BOARD
 
+      have_tie = false
+
       candidates.each { |new_board, spares, move|
         # Move is pending, so don't try it.
-        next if @cache.has_key?(new_board | opponent_to_move_marker) && @cache[new_board | opponent_to_move_marker].nil?
+        if @cache.has_key?(new_board | opponent_to_move_marker) && @cache[new_board | opponent_to_move_marker].nil?
+          have_tie = true
+          next
+        end
         cache(new_board, opponent_to_move_marker, nil) unless @cache.has_key?(new_board | opponent_to_move_marker)
 
         puts self.class.move_to_s(move) if DEBUG
@@ -161,9 +167,13 @@ module GobbletGobblers
         end
       }
 
-      # I did not win, so my opponent does.
-      cache(board, to_move_marker, opponent)
-      {opponent, nil}
+      # I did not win, so I can tie if possible, or else lose
+      winner = have_tie ? nil : opponent
+      if SANITY && (cached = @cache[board | to_move_marker]?)
+        raise "Have tie but cache says it's #{cached}" if have_tie && !cached.nil?
+      end
+      cache(board, to_move_marker, winner)
+      {winner, nil}
     end
 
     private def cache(board, to_move_marker, result)
