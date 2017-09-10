@@ -16,7 +16,7 @@ module GobbletGobblers
     P2_HAS_SPARE_SMALL = P2_SPARE_SMALL * 3
     STARTING_SPARES = P1_SPARE_BIG * 2 + P1_SPARE_MID * 2 + P1_SPARE_SMALL * 2 + P2_SPARE_BIG * 2 + P2_SPARE_MID * 2 + P2_SPARE_SMALL * 2
 
-    def search(board : Board = 0_u64, player_to_move : Int32 = 1, spares : UInt16 = STARTING_SPARES)
+    def winner(board : Board = 0_u64, player_to_move : Int32 = 1, spares : UInt16 = STARTING_SPARES)
       spares_present = [] of Tuple(UInt64, UInt16, Int32)
 
       case player_to_move
@@ -32,28 +32,39 @@ module GobbletGobblers
         raise "Unknown player #{player_to_move}"
       end
 
+      opponent = 3 - player_to_move
+      heights = (0..SIZE).map { |n| GobbletGobblers.height(board, n) }
+
       spares_present.each { |(piece, spare, height)|
         (0...SIZE).each { |square|
-          cur_height = GobbletGobblers.height(board, square)
-          next if cur_height >= height
+          next if heights[square] >= height
 
           new_board = board | (piece << (square * BITS_PER_SQUARE))
           next if @seen.includes?(new_board)
 
-          # Extra space to align with moves (a1 - c3)
-          puts " #{PIECE_NAMES[piece]} @ #{SQUARE_NAMES[square]}"
+          winners = GobbletGobblers.winners(new_board)
+          # My opponent won on this move, don't bother making it
+          next if winners[opponent - 1]
+
+          return player_to_move if winners[player_to_move - 1]
 
           @seen.add(new_board)
           TRANSFORMS.each { |t|
             transformed = GobbletGobblers.transform(new_board, t)
             @seen.add(transformed)
           }
+
+          result = winner(new_board, opponent, spares - spare)
+          return player_to_move if result == player_to_move
         }
       }
+
+      # I did not win, so my opponent does.
+      opponent
     end
   end
 
   def self.search
-    Search.new.search
+    puts Search.new.winner
   end
 end
