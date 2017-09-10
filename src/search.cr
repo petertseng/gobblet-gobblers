@@ -135,7 +135,7 @@ module GobbletGobblers
     end
 
     def winner(board : Board = 0_u64, player_to_move : Player = 1_i8, spares : Spares = STARTING_SPARES)
-      to_move_marker = player_to_move << BITS_PER_BOARD
+      to_move_marker = player_to_move.to_u64 << BITS_PER_BOARD
       if (cached = @cache[self.class.canonical(board) | to_move_marker]?)
         return cached
       end
@@ -156,7 +156,7 @@ module GobbletGobblers
         end
       }
 
-      opponent_to_move_marker = opponent << BITS_PER_BOARD
+      opponent_to_move_marker = opponent.to_u64 << BITS_PER_BOARD
 
       have_tie = false
 
@@ -190,12 +190,12 @@ module GobbletGobblers
       {winner, nil}
     end
 
-    private def cache(board, to_move_marker, result)
+    private def cache(board : Board, to_move_marker : UInt64, result : Result?)
       @cache[self.class.canonical(board) | to_move_marker] = result
     end
   end
 
-  def self.print_spares(spare)
+  def self.print_spares(spare : Search::Spares)
     {
       {"P1 Big", Search::P1_SPARE_BIG, Search::P1_HAS_SPARE_BIG},
       {"P1 Mid", Search::P1_SPARE_MID, Search::P1_HAS_SPARE_MID},
@@ -209,7 +209,7 @@ module GobbletGobblers
     }
   end
 
-  def self.search(piece, square)
+  def self.search(piece : Piece, square : Square)
     case piece
     when P1_SMALL
       spare = Search::P1_SPARE_SMALL
