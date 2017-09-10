@@ -35,13 +35,14 @@ module GobbletGobblers
       opponent = 3 - player_to_move
       heights = (0..SIZE).map { |n| GobbletGobblers.height(board, n) }
       best_opponent_delay = 0
+      to_move_marker = player_to_move << BITS_PER_BOARD
 
       spares_present.each { |(piece, spare, height)|
         (0...SIZE).each { |square|
           next if heights[square] >= height
 
           new_board = board | (piece << (square * BITS_PER_SQUARE))
-          next if @seen.includes?(new_board)
+          next if @seen.includes?(new_board | to_move_marker)
 
           winners = GobbletGobblers.winners(new_board)
           # My opponent won on this move, don't bother making it
@@ -49,10 +50,10 @@ module GobbletGobblers
 
           return {player_to_move, 1} if winners[player_to_move - 1]
 
-          @seen.add(new_board)
+          @seen.add(new_board | to_move_marker)
           TRANSFORMS.each { |t|
             transformed = GobbletGobblers.transform(new_board, t)
-            @seen.add(transformed)
+            @seen.add(transformed | to_move_marker)
           }
 
           sub_winner, sub_turns = winner(new_board, opponent, spares - spare)
