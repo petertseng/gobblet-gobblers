@@ -4,7 +4,8 @@ module GobbletGobblers
     alias Spare = UInt16
     alias Spares = UInt16
 
-    alias Result = Tuple(Player, Int32, Piece, Square?, Square)
+    alias Move = Tuple(Piece, Square?, Square)
+    alias Result = Tuple(Player, Move?)
 
     @cache = Hash(Board, Result?).new
 
@@ -50,7 +51,7 @@ module GobbletGobblers
       opponent = 3 - player_to_move
       heights = (0..SIZE).map { |n| GobbletGobblers.height(board, n) }
 
-      candidates = [] of Tuple(Board, Spares, Piece, Square?, Square)
+      candidates = [] of Tuple(Board, Spares, Move)
 
       # First, check for wins in one move.
 
@@ -64,12 +65,12 @@ module GobbletGobblers
           raise "Opponent already won, should be impossible?" if winners[opponent - 1]
 
           if winners[player_to_move - 1]
-            result = {player_to_move, 1, piece, nil, square}
+            result = {player_to_move, {piece, nil, square}}
             cache(board, to_move_marker, result)
             return result
           end
 
-          candidates << {new_board, spares - spare, piece, nil, square}
+          candidates << {new_board, spares - spare, {piece, nil, square}}
         }
       }
 
@@ -99,12 +100,12 @@ module GobbletGobblers
           next if winners[opponent - 1]
 
           if winners[player_to_move - 1]
-            result = {player_to_move, 1, piece, from_square, to_square}
+            result = {player_to_move, {piece, from_square, to_square}}
             cache(board, to_move_marker, result)
             return result
           end
 
-          candidates << {new_board, spares, piece, from_square, to_square}
+          candidates << {new_board, spares, {piece, from_square, to_square}}
         }
       }
 
@@ -114,7 +115,8 @@ module GobbletGobblers
       best_to_square = 0
       opponent_to_move_marker = opponent << BITS_PER_BOARD
 
-      candidates.each { |new_board, spares, piece, from_square, to_square|
+      candidates.each { |new_board, spares, move|
+        piece, from_square, to_square = move
         # Move is pending, so don't try it.
         next if @cache.has_key?(new_board | opponent_to_move_marker) && @cache[new_board | opponent_to_move_marker].nil?
         cache(new_board, opponent_to_move_marker, nil) unless @cache.has_key?(new_board | opponent_to_move_marker)
@@ -127,22 +129,17 @@ module GobbletGobblers
           end
         end
 
-        sub_winner, sub_turns, _, _, _ = winner(new_board, opponent, spares)
+        sub_winner, _ = winner(new_board, opponent, spares)
 
         if sub_winner == player_to_move
-          result = {sub_winner, sub_turns + 1, piece, from_square, to_square}
+          result = {sub_winner, move}
           cache(board, to_move_marker, result)
           return result
-        elsif sub_turns + 1 > best_opponent_delay
-          best_opponent_delay = sub_turns + 1
-          best_piece = piece
-          best_from_square = from_square
-          best_to_square = to_square
         end
       }
 
       # I did not win, so my opponent does.
-      result = {opponent, best_opponent_delay, best_piece, best_from_square, best_to_square}
+      result = {opponent, nil}
       cache(board, to_move_marker, result)
       result
     end
