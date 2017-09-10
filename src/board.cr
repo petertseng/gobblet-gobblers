@@ -1,6 +1,7 @@
 module GobbletGobblers
   alias Board = UInt64
   alias Piece = UInt64
+  alias Square = Int32
   alias Height = Int32
 
   # This is unlikely to change because 16 requires more rules

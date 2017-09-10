@@ -40,7 +40,7 @@ module GobbletGobblers
       heights = (0..SIZE).map { |n| GobbletGobblers.height(board, n) }
       to_move_marker = player_to_move << BITS_PER_BOARD
 
-      candidates = [] of Tuple(Board, Spares)
+      candidates = [] of Tuple(Board, Spares, Piece, Square?, Square)
 
       # First, check for wins in one move.
 
@@ -54,9 +54,9 @@ module GobbletGobblers
           winners = GobbletGobblers.winners(new_board)
           raise "Opponent already won, should be impossible?" if winners[opponent - 1]
 
-          return {player_to_move, 1} if winners[player_to_move - 1]
+          return {player_to_move, 1, piece, nil, square} if winners[player_to_move - 1]
 
-          candidates << {new_board, spares - spare}
+          candidates << {new_board, spares - spare, piece, nil, square}
         }
       }
 
@@ -86,9 +86,9 @@ module GobbletGobblers
           # My opponent won on this move, don't bother making it
           next if winners[opponent - 1]
 
-          return {player_to_move, 1} if winners[player_to_move - 1]
+          return {player_to_move, 1, piece, from_square, to_square} if winners[player_to_move - 1]
 
-          candidates << {new_board, spares}
+          candidates << {new_board, spares, piece, from_square, to_square}
         }
       }
 
@@ -101,18 +101,24 @@ module GobbletGobblers
       }
 
       best_opponent_delay = 0
+      best_piece = 0_u64
+      best_from_square = 0
+      best_to_square = 0
 
-      candidates.each { |new_board, spares|
-        sub_winner, sub_turns = winner(new_board, opponent, spares)
+      candidates.each { |new_board, spares, piece, from_square, to_square|
+        sub_winner, sub_turns, _, _, _ = winner(new_board, opponent, spares)
         if sub_winner == player_to_move
-          return {sub_winner, sub_turns + 1}
-        else
-          best_opponent_delay = {best_opponent_delay, sub_turns + 1}.max
+          return {sub_winner, sub_turns + 1, piece, from_square, to_square}
+        elsif sub_turns + 1 > best_opponent_delay
+          best_opponent_delay = sub_turns + 1
+          best_piece = piece
+          best_from_square = from_square
+          best_to_square = to_square
         end
       }
 
       # I did not win, so my opponent does.
-      {opponent, best_opponent_delay}
+      {opponent, best_opponent_delay, best_piece, best_from_square, best_to_square}
     end
   end
 
