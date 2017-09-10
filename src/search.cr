@@ -2,6 +2,10 @@ module GobbletGobblers
   class Search
     @seen = Set(Board).new
 
+    alias Player = Int32
+    alias Spare = UInt16
+    alias Spares = UInt16
+
     P1_SPARE_BIG = 1_u16 << 0
     P1_SPARE_MID = 1_u16 << 2
     P1_SPARE_SMALL = 1_u16 << 4
@@ -16,8 +20,8 @@ module GobbletGobblers
     P2_HAS_SPARE_SMALL = P2_SPARE_SMALL * 3
     STARTING_SPARES = P1_SPARE_BIG * 2 + P1_SPARE_MID * 2 + P1_SPARE_SMALL * 2 + P2_SPARE_BIG * 2 + P2_SPARE_MID * 2 + P2_SPARE_SMALL * 2
 
-    def winner(board : Board = 0_u64, player_to_move : Int32 = 1, spares : UInt16 = STARTING_SPARES)
-      spares_present = [] of Tuple(UInt64, UInt16, Int32)
+    def winner(board : Board = 0_u64, player_to_move : Player = 1, spares : Spares = STARTING_SPARES)
+      spares_present = [] of Tuple(Piece, Spare, Height)
 
       case player_to_move
       when 1
@@ -36,7 +40,7 @@ module GobbletGobblers
       heights = (0..SIZE).map { |n| GobbletGobblers.height(board, n) }
       to_move_marker = player_to_move << BITS_PER_BOARD
 
-      candidates = [] of Tuple(Board, UInt16)
+      candidates = [] of Tuple(Board, Spares)
 
       # First, check for wins in one move.
 

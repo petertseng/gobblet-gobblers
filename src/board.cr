@@ -1,5 +1,7 @@
 module GobbletGobblers
   alias Board = UInt64
+  alias Piece = UInt64
+  alias Height = Int32
 
   # This is unlikely to change because 16 requires more rules
   # (off-board pieces are in stacks, can only capture from off-board in a 3-in-a-row)
