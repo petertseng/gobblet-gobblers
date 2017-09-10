@@ -174,6 +174,8 @@ module GobbletGobblers
         if sub_winner == player_to_move
           cache(board, to_move_marker, player_to_move)
           return {player_to_move, move}
+        elsif sub_winner.nil?
+          have_tie = true
         end
       }
 
