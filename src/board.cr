@@ -18,6 +18,26 @@ module GobbletGobblers
   BITS_PER_ROW = BITS_PER_SQUARE * COLS
   MASK_PER_ROW = (1 << BITS_PER_ROW) - 1
 
+  PIECE_NAMES = {
+    P1_BIG => "l",
+    P2_BIG => "l",
+    P1_MID => "m",
+    P2_MID => "m",
+    P1_SMALL => "s",
+    P2_SMALL => "s",
+  }
+  SQUARE_NAMES = {
+    "a3",
+    "b3",
+    "c3",
+    "a2",
+    "b2",
+    "c2",
+    "a1",
+    "b1",
+    "c1",
+  }
+
   RED_GREEN = {31, 32}
   GREEN_RED = {32, 31}
 
