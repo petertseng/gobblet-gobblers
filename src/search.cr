@@ -5,7 +5,7 @@ module GobbletGobblers
     alias Spares = UInt16
 
     alias Move = Tuple(Piece, Square?, Square)
-    alias Result = Player
+    alias Result = Tuple(Player, Move?)
 
     @cache = Hash(Board, Result?).new
 
@@ -135,7 +135,7 @@ module GobbletGobblers
     def winner(board : Board = 0_u64, player_to_move : Player = 1_i8, spares : Spares = STARTING_SPARES)
       to_move_marker = player_to_move << BITS_PER_BOARD
       if (cached = @cache[self.class.canonical(board) | to_move_marker]?)
-        return {cached, nil}
+        return cached
       end
 
       GobbletGobblers.print_board(board) if DEBUG
@@ -149,7 +149,7 @@ module GobbletGobblers
         winners = GobbletGobblers.winners(new_board)
 
         if winners[player_to_move - 1]
-          cache(board, to_move_marker, player_to_move)
+          cache(board, to_move_marker, {player_to_move, move})
           return {player_to_move, move}
         end
       }
@@ -172,7 +172,7 @@ module GobbletGobblers
         sub_winner, _ = winner(new_board, opponent, spares)
 
         if sub_winner == player_to_move
-          cache(board, to_move_marker, player_to_move)
+          cache(board, to_move_marker, {player_to_move, move})
           return {player_to_move, move}
         elsif sub_winner.nil?
           have_tie = true
@@ -182,9 +182,9 @@ module GobbletGobblers
       # I did not win, so I can tie if possible, or else lose
       winner = have_tie ? nil : opponent
       if SANITY && (cached = @cache[self.class.canonical(board) | to_move_marker]?)
-        raise "Have tie but cache says it's #{cached}" if have_tie && !cached.nil?
+        raise "Have tie but cache says it's #{cached}" if have_tie && !cached[0].nil?
       end
-      cache(board, to_move_marker, winner)
+      cache(board, to_move_marker, winner ? {winner, nil} : nil)
       {winner, nil}
     end
 
