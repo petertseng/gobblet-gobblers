@@ -126,6 +126,8 @@ module GobbletGobblers
         winner, winning_move = winner(new_board, opponent, new_spares)
         if winner == player_to_move
           puts "#{self.class.move_to_s(move)}: Win"
+        elsif winner.nil?
+          puts "#{self.class.move_to_s(move)}: Draw"
         else
           puts "#{self.class.move_to_s(move)}: Lose; opponent plays #{winning_move ? self.class.move_to_s(winning_move) : "unknown!"}"
         end
