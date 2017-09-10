@@ -29,6 +29,15 @@ module GobbletGobblers
     # This might be faster than doing it in 0..8 order.
     TARGET_SQUARES = {4, 0, 2, 6, 8, 1, 3, 5, 7}
 
+    def self.canonical(board : Board)
+      c = board
+      TRANSFORMS.each { |t|
+        transformed = GobbletGobblers.transform(board, t)
+        c = {c, transformed}.min
+      }
+      c
+    end
+
     def self.legal_moves(board : Board, player_to_move : Player, spares : Spares)
       heights = (0..SIZE).map { |n| GobbletGobblers.height(board, n) }
 
@@ -125,7 +134,7 @@ module GobbletGobblers
 
     def winner(board : Board = 0_u64, player_to_move : Player = 1_i8, spares : Spares = STARTING_SPARES)
       to_move_marker = player_to_move << BITS_PER_BOARD
-      if (cached = @cache[board | to_move_marker]?)
+      if (cached = @cache[self.class.canonical(board) | to_move_marker]?)
         return {cached, nil}
       end
 
@@ -151,11 +160,12 @@ module GobbletGobblers
 
       candidates.each { |new_board, spares, move|
         # Move is pending, so don't try it.
-        if @cache.has_key?(new_board | opponent_to_move_marker) && @cache[new_board | opponent_to_move_marker].nil?
+        new_board_key = self.class.canonical(new_board) | opponent_to_move_marker
+        if @cache.has_key?(new_board_key) && @cache[new_board_key].nil?
           have_tie = true
           next
         end
-        cache(new_board, opponent_to_move_marker, nil) unless @cache.has_key?(new_board | opponent_to_move_marker)
+        cache(new_board, opponent_to_move_marker, nil) unless @cache.has_key?(new_board_key)
 
         puts self.class.move_to_s(move) if DEBUG
 
@@ -169,7 +179,7 @@ module GobbletGobblers
 
       # I did not win, so I can tie if possible, or else lose
       winner = have_tie ? nil : opponent
-      if SANITY && (cached = @cache[board | to_move_marker]?)
+      if SANITY && (cached = @cache[self.class.canonical(board) | to_move_marker]?)
         raise "Have tie but cache says it's #{cached}" if have_tie && !cached.nil?
       end
       cache(board, to_move_marker, winner)
@@ -177,11 +187,7 @@ module GobbletGobblers
     end
 
     private def cache(board, to_move_marker, result)
-      @cache[board | to_move_marker] = result
-      TRANSFORMS.each { |t|
-        transformed = GobbletGobblers.transform(board, t)
-        @cache[transformed | to_move_marker] = result
-      }
+      @cache[self.class.canonical(board) | to_move_marker] = result
     end
   end
 
