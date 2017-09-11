@@ -67,8 +67,14 @@ module GobbletGobblers
         have_winner = true
       else
         player_to_move = opponent
-        winner, _ = search.winner(board, player_to_move, spares)
-        puts "Winner if perfect: #{names[winner - 1]} (Pkayer #{winner})"
+        winner, winning_move = search.winner(board, player_to_move, spares)
+        if !winner
+          puts "Winner if perfect: Draw"
+        elsif winning_move
+          puts "Winner if perfect: #{names[winner - 1]} (Player #{winner}) - possible winning move: #{Search.move_to_s(winning_move)}"
+        else
+          puts "Winner if perfect: #{names[winner - 1]} (Player #{winner})"
+        end
       end
     }
   end
