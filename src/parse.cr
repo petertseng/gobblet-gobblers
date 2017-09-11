@@ -58,10 +58,10 @@ module GobbletGobblers
 
       winners = winners(board)
       if winners[opponent - 1]
-        puts "#{names[opponent - 1]} (Player #{opponent}) has won"
+        puts "#{names[opponent - 1].strip} (Player #{opponent}) has won"
         have_winner = true
       elsif winners[player_to_move - 1]
-        puts "#{names[player_to_move - 1]} (Player #{player_to_move}) has won"
+        puts "#{names[player_to_move - 1].strip} (Player #{player_to_move}) has won"
         have_winner = true
       else
         player_to_move = opponent
