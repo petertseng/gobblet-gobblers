@@ -73,15 +73,7 @@ module GobbletGobblers
       (0...SIZE).each { |from_square|
         next unless GobbletGobblers.owner(board, from_square) == player_to_move
         from_height = heights[from_square]
-        case {player_to_move, from_height}
-        when {1, 3}; piece = P1_BIG
-        when {1, 2}; piece = P1_MID
-        when {1, 1}; piece = P1_SMALL
-        when {2, 3}; piece = P2_BIG
-        when {2, 2}; piece = P2_MID
-        when {2, 1}; piece = P2_SMALL
-        else         raise "Invalid piece #{player_to_move} #{from_height}"
-        end
+        piece = GobbletGobblers.piece_for_height(player_to_move, from_height)
         board_without = board & ~(piece << (from_square * BITS_PER_SQUARE))
 
         TARGET_SQUARES.each { |to_square|
@@ -209,17 +201,32 @@ module GobbletGobblers
     }
   end
 
-  def self.search(piece : Piece, square : Square)
-    case piece
-    when P1_SMALL
-      spare = Search::P1_SPARE_SMALL
-    when P1_MID
-      spare = Search::P1_SPARE_MID
-    when P1_BIG
-      spare = Search::P1_SPARE_BIG
-    else
-      raise "Invalid piece #{piece}"
+  def self.piece_for_height(player : Search::Player, height : Int32)
+    case {player, height}
+    when {1, 3}; P1_BIG
+    when {1, 2}; P1_MID
+    when {1, 1}; P1_SMALL
+    when {2, 3}; P2_BIG
+    when {2, 2}; P2_MID
+    when {2, 1}; P2_SMALL
+    else         raise "Invalid piece #{player} #{height}"
     end
+  end
+
+  def self.spare_for(piece : Piece)
+    case piece
+    when P1_SMALL; {Search::P1_SPARE_SMALL, Search::P1_HAS_SPARE_SMALL}
+    when P1_MID  ; {Search::P1_SPARE_MID, Search::P1_HAS_SPARE_MID}
+    when P1_BIG  ; {Search::P1_SPARE_BIG, Search::P1_HAS_SPARE_BIG}
+    when P2_SMALL; {Search::P2_SPARE_SMALL, Search::P2_HAS_SPARE_SMALL}
+    when P2_MID  ; {Search::P2_SPARE_MID, Search::P2_HAS_SPARE_MID}
+    when P2_BIG  ; {Search::P2_SPARE_BIG, Search::P2_HAS_SPARE_BIG}
+    else           raise "Invalid piece #{piece}"
+    end
+  end
+
+  def self.search(piece : Piece, square : Square)
+    spare, _ = spare_for(piece)
 
     board = piece << (square * BITS_PER_SQUARE)
     spares = Search::STARTING_SPARES - spare

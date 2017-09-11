@@ -30,6 +30,11 @@ module GobbletGobblers
     P1_SMALL => "S",
     P2_SMALL => "S",
   }
+  PIECE_IDS = {
+    'L' => {P1_BIG, P2_BIG},
+    'M' => {P1_MID, P2_MID},
+    'S' => {P1_SMALL, P2_SMALL},
+  }
   SQUARE_NAMES = {
     "a3",
     "b3",
@@ -41,6 +46,7 @@ module GobbletGobblers
     "b1",
     "c1",
   }
+  SQUARE_IDS = SQUARE_NAMES.to_a.map_with_index { |n, i| {n, i} }.to_h
 
   RED       = {31, 'M'}
   GREEN     = {32, 'N'}
