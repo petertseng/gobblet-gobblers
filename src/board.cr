@@ -11,6 +11,11 @@ module GobbletGobblers
   ROWS            = 3
   COLS            = 3
   BITS_PER_SQUARE = 6
+  # The board is represented by packing bits together.
+  # There are six types of pieces and nine squares,
+  # so everything fits nicely in a u64.
+  # They're all concatenated together:
+  # The first six bits are square 0, the next six are square 1, etc.
   P1_BIG          = 1_u64 << 0
   P2_BIG          = 1_u64 << 1
   P1_MID          = 1_u64 << 2
@@ -77,13 +82,21 @@ module GobbletGobblers
     nil
   end
 
+  # It's not really important which transform is which, but we'll identify them anyway.
   TRANSFORMS = {
+    # Reflect over falling diagonal
     {0, 3, 6, 1, 4, 7, 2, 5, 8},
+    # Rotate CCW
     {2, 5, 8, 1, 4, 7, 0, 3, 6},
+    # Reflect over rising diagonal
     {8, 5, 2, 7, 4, 1, 6, 3, 0},
+    # Rotate CW
     {6, 3, 0, 7, 4, 1, 8, 5, 2},
+    # Reflect over vertical line
     {2, 1, 0, 5, 4, 3, 8, 7, 6},
+    # Rotate 180
     {8, 7, 6, 5, 4, 3, 2, 1, 0},
+    # Reflect over vertical line
     {6, 7, 8, 3, 4, 5, 0, 1, 2},
   }
 
@@ -150,6 +163,8 @@ module GobbletGobblers
     {2, 4, 6},
   }
 
+  # We look for winners of both players at once,
+  # since a move might simultaneously make a line for both players.
   def self.winners(board : Board)
     owners = (0..SIZE).map { |n| owner(board, n) }
     win1 = false

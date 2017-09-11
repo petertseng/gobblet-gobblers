@@ -1,6 +1,12 @@
 require "./search" # spare_for
 
 module GobbletGobblers
+  # Parses a series of moves, and shows the perfect-play winner at each step.
+  # Examples of games to parse:
+  # n lb2 lc1 la1 mc3 a1c3 ma1 b2a1 lb2 ma3 c1a3 mc1 sc2 sb1
+  # m sb2 lb2 sc3 lc3 ma1 c3a1 mc3 b2c3 lb2 ma3 la3 mc1 b2c1
+  # First word is n/m indicating who's going first
+  # All others are moves, either a placement (la1) or a move (a2c3).
   def self.parse(args, show_board : Bool = false)
     case args[0][0]
     when 'n'
@@ -23,6 +29,8 @@ module GobbletGobblers
       raise "#{arg}: Already have winner" if have_winner
 
       if "LlMmSs".includes?(arg[0])
+        # TODO: Should validate that placed piece height > height of target square
+
         piece_to_place = PIECE_IDS[arg[0].upcase][player_to_move - 1]
         spare, has = spare_for(piece_to_place)
         square = SQUARE_IDS[arg[1..2]]
@@ -33,6 +41,8 @@ module GobbletGobblers
         spares -= spare
         move = {piece_to_place, nil, square}
       else
+        # TODO: Should validate that moved piece height > height of target square
+
         from_square = SQUARE_IDS[arg[0..1]]
         to_square = SQUARE_IDS[arg[2..3]]
         owner = owner(board, from_square)

@@ -1,4 +1,6 @@
 module GobbletGobblers
+  # In hindsight, some of these functions and types don't really belong in Search,
+  # but there wasn't much point seen in moving the mout.
   class Search
     alias Player = Int8
     alias Spare = UInt16
@@ -12,6 +14,8 @@ module GobbletGobblers
     DEBUG  = false
     SANITY = false
 
+    # Spare pieces are simply crammed together in a u16.
+    # There are six pieces and two spares each, so two bits are needed per piece.
     P1_SPARE_BIG       = 1_u16 << 0
     P1_SPARE_MID       = 1_u16 << 2
     P1_SPARE_SMALL     = 1_u16 << 4
@@ -29,7 +33,8 @@ module GobbletGobblers
     # This might be faster than doing it in 0..8 order.
     TARGET_SQUARES = {4, 0, 2, 6, 8, 1, 3, 5, 7}
 
-    def self.canonical(board : Board)
+    # Returns the canonical representation of the board and the transform used to get there.
+    def self.canonical(board : Board) : Tuple(Board, Transform)
       c = board
       best = {0, 1, 2, 3, 4, 5, 6, 7, 8}
 
@@ -44,7 +49,7 @@ module GobbletGobblers
       {c, best}
     end
 
-    def self.legal_moves(board : Board, player_to_move : Player, spares : Spares)
+    def self.legal_moves(board : Board, player_to_move : Player, spares : Spares) : Array(Tuple(Board, Spares, Move))
       heights = (0..SIZE).map { |n| GobbletGobblers.height(board, n) }
 
       spares_present = [] of Tuple(Piece, Spare, Height)
@@ -91,6 +96,8 @@ module GobbletGobblers
           winners = GobbletGobblers.winners(new_board)
 
           # My opponent won on this move, don't bother making it
+          # I use Gobblet (4x4) rules and say that you lose if this happens,
+          # so I just don't consider it.
           next if winners[opponent - 1]
 
           candidates << {new_board, spares, {piece, from_square, to_square}}
@@ -109,6 +116,7 @@ module GobbletGobblers
       end
     end
 
+    # Given a board state, shows the result of all legal moves from this board.
     def all_moves(board : Board = 0_u64, player_to_move : Player = 1_i8, spares : Spares = STARTING_SPARES)
       candidates = self.class.legal_moves(board, player_to_move, spares)
       opponent = 3_i8 - player_to_move
@@ -132,7 +140,9 @@ module GobbletGobblers
       }
     end
 
-    def winner(board : Board = 0_u64, player_to_move : Player = 1_i8, spares : Spares = STARTING_SPARES)
+    # Given a board state, tells who will win.
+    # If it's the player to move, provides one move that will win.
+    def winner(board : Board = 0_u64, player_to_move : Player = 1_i8, spares : Spares = STARTING_SPARES) : Tuple(Player?, Move?)
       to_move_marker = player_to_move.to_u64 << BITS_PER_BOARD
       canonical, t = self.class.canonical(board)
       if (cached = @cache[canonical | to_move_marker]?)
@@ -256,6 +266,8 @@ module GobbletGobblers
     end
   end
 
+  # Some basic function that starts a search given that the first player places the given piece in the given square.
+  # Mostly unnecessary given that all_moves exists, but was useful to test the consistency of all_moves.
   def self.search(piece : Piece, square : Square)
     spare, _ = spare_for(piece)
 
