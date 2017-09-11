@@ -12,8 +12,12 @@ module GobbletGobblers
     spares = Search::STARTING_SPARES
     player_to_move = 1_i8
     turn = 1
+    search = Search.new
+    have_winner = false
 
     args[1..-1].each { |arg|
+      raise "#{arg}: Already have winner" if have_winner
+
       if "LlMmSs".includes?(arg[0])
         piece_to_place = PIECE_IDS[arg[0].upcase][player_to_move - 1]
         spare, has = spare_for(piece_to_place)
@@ -45,9 +49,23 @@ module GobbletGobblers
         puts "%2d.       ... " % turn + Search.move_to_s(move)
         turn += 1
       end
-      player_to_move = 3_i8 - player_to_move
+
+      opponent = 3_i8 - player_to_move
 
       print_board(board, colours)
+
+      winners = winners(board)
+      if winners[opponent - 1]
+        puts "#{opponent} has won"
+        have_winner = true
+      elsif winners[player_to_move - 1]
+        puts "#{player_to_move} has won"
+        have_winner = true
+      else
+        player_to_move = opponent
+        winner, _ = search.winner(board, player_to_move, spares)
+        puts "Winner if perfect: #{winner}"
+      end
     }
   end
 end
