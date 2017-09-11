@@ -5,10 +5,10 @@ module GobbletGobblers
     case args[0][0]
     when 'n'
       colours = GREEN_RED
-      names = {"Nopdong", "Madong"}
+      names = {"Nopdong", " Madong"}
     when 'm'
       colours = RED_GREEN
-      names = {"Madong", "Nopdong"}
+      names = {" Madong", "Nopdong"}
     else      raise "Unknown colour #{args[0]}"
     end
 
