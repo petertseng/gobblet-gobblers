@@ -3,8 +3,12 @@ require "./search" # spare_for
 module GobbletGobblers
   def self.parse(args)
     case args[0][0]
-    when 'n'; colours = GREEN_RED
-    when 'm'; colours = RED_GREEN
+    when 'n'
+      colours = GREEN_RED
+      names = {"Nopdong", "Madong"}
+    when 'm'
+      colours = RED_GREEN
+      names = {"Madong", "Nopdong"}
     else      raise "Unknown colour #{args[0]}"
     end
 
@@ -56,15 +60,15 @@ module GobbletGobblers
 
       winners = winners(board)
       if winners[opponent - 1]
-        puts "#{opponent} has won"
+        puts "#{names[opponent - 1]} (Player #{opponent}) has won"
         have_winner = true
       elsif winners[player_to_move - 1]
-        puts "#{player_to_move} has won"
+        puts "#{names[player_to_move - 1]} (Player #{player_to_move}) has won"
         have_winner = true
       else
         player_to_move = opponent
         winner, _ = search.winner(board, player_to_move, spares)
-        puts "Winner if perfect: #{winner}"
+        puts "Winner if perfect: #{names[winner - 1]} (Pkayer #{winner})"
       end
     }
   end
