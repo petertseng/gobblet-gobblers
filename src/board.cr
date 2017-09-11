@@ -87,7 +87,9 @@ module GobbletGobblers
     {6, 7, 8, 3, 4, 5, 0, 1, 2},
   }
 
-  def self.transform(board : Board, permutation : Tuple(Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32)) : Board
+  alias Transform = Tuple(Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32)
+
+  def self.transform(board : Board, permutation : Transform) : Board
     (((board >> (0 * BITS_PER_SQUARE)) & MASK_PER_SQUARE) << (permutation[0] * BITS_PER_SQUARE)) |
       (((board >> (1 * BITS_PER_SQUARE)) & MASK_PER_SQUARE) << (permutation[1] * BITS_PER_SQUARE)) |
       (((board >> (2 * BITS_PER_SQUARE)) & MASK_PER_SQUARE) << (permutation[2] * BITS_PER_SQUARE)) |

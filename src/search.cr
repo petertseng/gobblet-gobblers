@@ -31,11 +31,17 @@ module GobbletGobblers
 
     def self.canonical(board : Board)
       c = board
+      best = {0, 1, 2, 3, 4, 5, 6, 7, 8}
+
       TRANSFORMS.each { |t|
         transformed = GobbletGobblers.transform(board, t)
-        c = {c, transformed}.min
+        if transformed < c
+          c = transformed
+          best = t
+        end
       }
-      c
+
+      {c, best}
     end
 
     def self.legal_moves(board : Board, player_to_move : Player, spares : Spares)
@@ -128,8 +134,9 @@ module GobbletGobblers
 
     def winner(board : Board = 0_u64, player_to_move : Player = 1_i8, spares : Spares = STARTING_SPARES)
       to_move_marker = player_to_move.to_u64 << BITS_PER_BOARD
-      if (cached = @cache[self.class.canonical(board) | to_move_marker]?)
-        return cached
+      canonical, t = self.class.canonical(board)
+      if (cached = @cache[canonical | to_move_marker]?)
+        return transform_result(cached, invert(t)).not_nil!
       end
 
       GobbletGobblers.print_board(board) if DEBUG
@@ -154,7 +161,7 @@ module GobbletGobblers
 
       candidates.each { |new_board, spares, move|
         # Move is pending, so don't try it.
-        new_board_key = self.class.canonical(new_board) | opponent_to_move_marker
+        new_board_key = self.class.canonical(new_board)[0] | opponent_to_move_marker
         if @cache.has_key?(new_board_key) && @cache[new_board_key].nil?
           have_tie = true
           next
@@ -175,15 +182,39 @@ module GobbletGobblers
 
       # I did not win, so I can tie if possible, or else lose
       winner = have_tie ? nil : opponent
-      if SANITY && (cached = @cache[self.class.canonical(board) | to_move_marker]?)
+      if SANITY && (cached = @cache[canonical | to_move_marker]?)
         raise "Have tie but cache says it's #{cached}" if have_tie && !cached[0].nil?
       end
       cache(board, to_move_marker, winner ? {winner, nil} : nil)
       {winner, nil}
     end
 
+    private def transform_result(result : Result?, transform : Transform) : Result?
+      result ? {result[0], transform_move(result[1], transform)} : nil
+    end
+
+    private def transform_move(move : Move?, transform : Transform) : Move?
+      move ? {move[0], move[1] ? transform[move[1].not_nil!] : nil, transform[move[2]]} : nil
+    end
+
+    private def invert(transform : Transform) : Transform
+      a = transform.to_a.map_with_index { |i, n| {i, n} }.sort
+      {
+        a[0][1],
+        a[1][1],
+        a[2][1],
+        a[3][1],
+        a[4][1],
+        a[5][1],
+        a[6][1],
+        a[7][1],
+        a[8][1],
+      }
+    end
+
     private def cache(board : Board, to_move_marker : UInt64, result : Result?)
-      @cache[self.class.canonical(board) | to_move_marker] = result
+      canonical, t = self.class.canonical(board)
+      @cache[canonical | to_move_marker] = transform_result(result, t)
     end
   end
 
