@@ -1,7 +1,7 @@
 require "./search" # spare_for
 
 module GobbletGobblers
-  def self.parse(args)
+  def self.parse(args, show_board : Bool = false)
     case args[0][0]
     when 'n'
       colours = GREEN_RED
@@ -48,15 +48,13 @@ module GobbletGobblers
       end
 
       if player_to_move == 1
-        puts "%2d. " % turn + Search.move_to_s(move)
+        print "%2d. " % turn + Search.move_to_s(move) + "           "
       else
-        puts "%2d.       ... " % turn + Search.move_to_s(move)
+        print "%2d.       ... " % turn + Search.move_to_s(move) + " "
         turn += 1
       end
 
       opponent = 3_i8 - player_to_move
-
-      print_board(board, colours)
 
       winners = winners(board)
       if winners[opponent - 1]
@@ -76,6 +74,8 @@ module GobbletGobblers
           puts "Winner if perfect: #{names[winner - 1]} (Player #{winner})"
         end
       end
+
+      print_board(board, colours) if show_board
     }
   end
 end
