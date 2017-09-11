@@ -27,6 +27,14 @@ module GobbletGobblers
   MASK_PER_ROW    = (1 << BITS_PER_ROW) - 1
   BITS_PER_BOARD  = BITS_PER_SQUARE * SIZE
 
+  PIECE_HEIGHTS = {
+    P1_BIG   => 3,
+    P2_BIG   => 3,
+    P1_MID   => 2,
+    P2_MID   => 2,
+    P1_SMALL => 1,
+    P2_SMALL => 1,
+  }
   PIECE_NAMES = {
     P1_BIG   => "L",
     P2_BIG   => "L",

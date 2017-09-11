@@ -29,27 +29,25 @@ module GobbletGobblers
       raise "#{arg}: Already have winner" if have_winner
 
       if "LlMmSs".includes?(arg[0])
-        # TODO: Should validate that placed piece height > height of target square
-
         piece_to_place = PIECE_IDS[arg[0].upcase][player_to_move - 1]
         spare, has = spare_for(piece_to_place)
         square = SQUARE_IDS[arg[1..2]]
 
         raise "#{arg}: No more of that piece to place" if spares & has == 0
+        raise "#{arg}: A bigger piece is in the way" if height(board, square) >= PIECE_HEIGHTS[piece_to_place]
 
         board |= piece_to_place << (square * BITS_PER_SQUARE)
         spares -= spare
         move = {piece_to_place, nil, square}
       else
-        # TODO: Should validate that moved piece height > height of target square
-
         from_square = SQUARE_IDS[arg[0..1]]
         to_square = SQUARE_IDS[arg[2..3]]
         owner = owner(board, from_square)
         raise "#{arg}: Don't own that piece" if owner != player_to_move
 
-        height = height(board, from_square)
-        piece = piece_for_height(player_to_move, height)
+        height_from = height(board, from_square)
+        piece = piece_for_height(player_to_move, height_from)
+        raise "#{arg}: A bigger piece is in the way" if height(board, to_square) >= height_from
 
         board_without = board & ~(piece << (from_square * BITS_PER_SQUARE))
         board = board_without | (piece << (to_square * BITS_PER_SQUARE))
